@@ -4,13 +4,15 @@ Get info
      kubectl get all -A
      kubectl get all
      kubectl get pod/pods
+     kubectl get pods -o wide
      kubectl get deployment/deployments
      kubectl get replicaset/replicasets
-     kubectl get service/services
+     kubectl get svc/service/services
      kubectl get statefulset/statefulsets
      kubectl get job/jobs
      kubectl get cronjob/cronjob
      kubectl get daemonset/daemonsets
+     kubectl get nodes
 
  
 Deployments

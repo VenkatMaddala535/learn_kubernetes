@@ -20,3 +20,9 @@ Persistent Volumes
 Persistent Volume Claims
 Statefulsets
 
+Services:
+    ClusterIP --> internal ,default
+    NodePort --> testing purpose, internal and external
+    LoadBalancer --> internal and external , cloud provider
+    Externalname --> 
+
