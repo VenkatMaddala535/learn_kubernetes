@@ -1,0 +1,22 @@
+cluster
+control plane(master)
+    api-server
+    scheduler
+    controller manager
+    etcd
+node(worker)
+    kubelet
+    kube-proxy
+    container platform
+
+pods
+deployments
+Services
+Ingress
+ConfigMaps
+Secrets
+Namespaces
+Persistent Volumes
+Persistent Volume Claims
+Statefulsets
+

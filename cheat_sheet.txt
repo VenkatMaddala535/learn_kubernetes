@@ -1,0 +1,27 @@
+Get info
+    use -n to get info of particular Namespaces
+    use -A to get all running and dead processes
+     kubectl get all -A
+     kubectl get all
+     kubectl get pod/pods
+     kubectl get deployment/deployments
+     kubectl get replicaset/replicasets
+     kubectl get service/services
+     kubectl get statefulset/statefulsets
+     kubectl get job/jobs
+     kubectl get cronjob/cronjob
+     kubectl get daemonset/daemonsets
+
+ 
+Deployments
+    kubectl apply -f "YML FILE PATH"
+
+Describe
+    kubectl describe pod/replicasets/deployments "NAME OF POD/replicaset/service/deployment" 
+
+
+
+
+
+
+
