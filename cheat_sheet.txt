@@ -19,6 +19,9 @@ Deployments
 Describe
     kubectl describe pod/replicasets/deployments "NAME OF POD/replicaset/service/deployment" 
 
+Delete
+    kubectl delete pod "POD Name" (if its created by a pod then it delete permentely or if by deployment it deleted and  instantly new pod created)
+
 
 
 
