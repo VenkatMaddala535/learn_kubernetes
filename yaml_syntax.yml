@@ -1,0 +1,28 @@
+# Scalars
+name: Venkat
+role: Pipeline TD
+dept: Pipeline
+
+# List
+Duties:
+  - Development
+  - Testing
+  - Deployment
+
+# Mapping
+Skills:
+  programming_languages: Python
+  Database: SQL
+  DevOps_tools:
+    - Docker
+    - Kubernetes
+    - Jenkins
+
+# Multi-line scalar
+WhatThisFileAbout: |
+  Learning to write YAML files.
+  This file demonstrates:
+  - Scalars
+  - Lists
+  - Mappings
+  - Multi-line strings
