@@ -8,21 +8,29 @@ Get info
      kubectl get deployment/deployments
      kubectl get replicaset/replicasets
      kubectl get svc/service/services
+     kubectl get namespace/namespaces
      kubectl get statefulset/statefulsets
      kubectl get job/jobs
      kubectl get cronjob/cronjob
      kubectl get daemonset/daemonsets
      kubectl get nodes
+     kubectl get all -n <namespace>
 
  
 Deployments
-    kubectl apply -f "YML FILE PATH"
+    kubectl apply -f <YML FILE PATH>
 
 Describe
-    kubectl describe pod/replicasets/deployments "NAME OF POD/replicaset/service/deployment" 
+    kubectl describe pod/replicasets/deployments <NAME OF POD/replicaset/service/deployment">
 
 Delete
-    kubectl delete pod "POD Name" (if its created by a pod then it delete permentely or if by deployment it deleted and  instantly new pod created)
+    kubectl delete pod <POD Name> (if its created by a pod then it delete permentely or if by deployment it deleted and  instantly new pod created)
+
+Create Namespaces   
+    kubectl create namespace <Namespace>
+
+Ingress_url:
+    https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.2.1/deploy/static/provider/cloud/deploy.yaml
 
 
 

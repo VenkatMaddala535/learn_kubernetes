@@ -25,3 +25,9 @@ Services:
     NodePort --> testing purpose, internal and external, not secure ,port>30000
     LoadBalancer --> internal and external , cloud provider
     Externalname --> 
+
+Layer4 vs Layer7 load balancer
+
+Ingress
+    Ingress Controller
+    Ingress Resources
