@@ -1,0 +1,26 @@
+                User/Application
+                      |
+                      | "I need 20 GB"
+                      ▼
+                  PVC (Request)
+                      |
+                      ▼
+                Kubernetes checks
+                      |
+          +-----------+-----------+
+          |                       |
+   Matching PV exists?         No matching PV
+          |                       |
+         Yes                      ▼
+          |                StorageClass
+          |                       |
+          ▼                Creates a new PV
+     Bind PVC to PV              |
+          |                      ▼
+          +-----------> New PV created
+                         |
+                         ▼
+                  Bind PVC to PV
+                         |
+                         ▼
+                Application gets storage
