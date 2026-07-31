@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: git-lab-deployment
+  namespace: git-lab
+  labels:
+    app: git-lab
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: git-lab
+  template:
+    metadata:
+      labels:
+        app: git-lab
+    spec:
+      containers:
+        - name: git-lab-container
+          image: gitlab/gitlab-ce:latest
+          ports:
+            - containerPort: 80
+      volumes:
+        - name: git-lab-data
+          persistentVolumeClaim:
+            claimName: git-lab-pvc
+
+
+
+
+    
+  
+
+
+      
+
+

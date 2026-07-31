@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: git-lab-service
+  namespace: git-lab
+  labels:
+    app: git-lab
+spec:
+  type: LoadBalancer
+  selector:
+    app: git-lab
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+

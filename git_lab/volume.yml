@@ -1,0 +1,37 @@
+# Storage Class
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name:  git-lab-local-storage
+  namespace: git-lab
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: Immediate
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: git-lab-pv
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes: [ReadWriteOnce]
+  storageClassName: git-lab-local-storage
+  hostPath:
+    path: ""
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: git-lab-pvc
+  namespace: git-lab
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: git-lab-local-storage
+
