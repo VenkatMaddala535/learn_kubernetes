@@ -64,4 +64,10 @@ Volumes:
 
     Local Volume Types
         - hostPath (most common for local learning)
-        - emptyDir (temporary storage)`
+        - emptyDir (temporary storage)
+
+Vertical scaling vs horizontal scaling
+
+Statefullsets
+    Data Replication
+
