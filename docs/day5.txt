@@ -1,0 +1,181 @@
+92.etcd — NOSPACE
+    etcd = Kubernetes database.
+    NOSPACE = etcd storage quota is full → writes can be blocked.
+    Compaction = removes old revisions/history.
+    After compaction, the physical database file may still occupy the same space.
+    Defragmentation = reclaims that unused physical space.
+    Then clear the NOSPACE alarm and test a write.
+    Check etcd quota and node filesystem space separately.
+
+    Memory:
+    NOSPACE → Compact → Defrag → Clear alarm → Test write
+
+    etcd becomes full
+        ↓
+    NOSPACE alarm ON 🚨
+        ↓
+    compact + defragment
+        ↓
+    space recovered
+        ↓
+    clear/disarm alarm
+        ↓
+    NOSPACE alarm OFF ✅
+        ↓
+    writes can work again
+
+
+93.Secret exposed in logs
+    Revoke / Rotate
+    Change credential at the actual DB/provider.
+    Old credential must stop working.
+    Changing only K8s Secret is not enough.
+    Update Applications
+    Put new credential in K8s Secret.
+    Restart/reload app if needed.
+    Verify app works with new credential.
+    Contain Logs
+    Restrict log access.
+    Preserve evidence.
+    Check other copies/backups of logs.
+    Fix the Cause
+    Stop app from logging secrets.
+    Search for similar leaks.
+    Prevent credentials from appearing in future logs.
+
+    Memory: 🔄 Rotate → Update → Contain → Prevent
+
+94.CRD = defines custom resource
+    Operator = manages custom resource
+    Webhook = validates/converts resource
+
+    After Kubernetes upgrade:
+    - Check operator compatibility
+    - Check CRD served/storage versions
+    - Check storedVersions
+    - Check conversion webhook
+    - Don't delete CRD as a quick fix
+
+    Memory:
+    Operator → CRD → Stored data → Webhook
+
+    Conversion webhook → converts CRD versions.
+    Validating webhook → checks whether the object is allowed.
+    Mutating webhook → modifies the object before it is stored.
+
+95.HPA flapping
+
+    HPA flapping = Pods repeatedly increase and decrease.
+
+    Causes: rapidly changing metrics, bad requests, delays, or another controller changing replicas.
+
+    Fix/check: metric quality → requests → stabilization → rate limits → competing controllers.
+
+    Scale-down stabilization = don't shrink immediately based on a temporary low metric.
+
+    HPA Flapping
+    HPA flapping → Pods repeatedly go up and down.
+    Changing metrics → CPU/traffic changes quickly, so HPA keeps changing replicas.
+    CPU requests → HPA calculates CPU % using the CPU request as the denominator.
+    Delays → Metrics, Pod startup, and application response take time, so HPA may react late.
+    Other controllers → Another controller changing replicas can fight with HPA.
+    Rate limits → Control how quickly HPA can add/remove Pods.
+    Scale-down stabilization → Wait before reducing Pods; if low demand continues, it eventually scales down.
+
+    Memory:
+
+    HPA decides how many → stabilization prevents quick scale-down → rate limits control speed.
+
+96.Pod Eviction — Disk Pressure
+
+    DiskPressure = Node disk is running low.
+
+    Causes: disk bytes full or inodes full.
+    Common consumers: logs, images, writable layers, emptyDir.
+    emptyDir = temporary Pod storage; Pod evicted/deleted → data lost.
+    PVC = persistent storage; separate lifecycle.
+    Kubelet may evict Pods to protect the node.
+    Fix: find what fills the disk → clean safely → verify DiskPressure clears.
+    Don't manually delete kubelet/runtime directories.
+    ephemeral-storage requests/limits help control temporary storage.
+
+    Memory:
+
+    Disk full → DiskPressure → Pod eviction → clean storage → recover.
+
+    |                             | **etcd**                           | **PVC**                         | **emptyDir**                   |
+    | --------------------------- | ---------------------------------- | ------------------------------- | ------------------------------ |
+    | What is it?                 | Kubernetes **database**            | **Persistent storage** for Pods | **Temporary storage** for Pods |
+    | Stores                      | Cluster state                      | Application data                | Temporary/scratch data         |
+    | Example                     | Pod/Deployment/Service definitions | Database files, user uploads    | Cache, temp files              |
+    | Data survives Pod deletion? | Yes                                | **Yes**                         | **No**                         |
+    | Main concern                | etcd storage/fullness              | Storage capacity                | Node disk usage                |
+    | Related to DiskPressure?    | ❌ Different problem                | Usually ❌                       | **Yes**                      |
+
+97.Ingress 502
+
+    Traffic path: Client → Ingress → Service → Pod → Application
+
+    Common cause: Service targetPort points to the wrong application port.
+
+    Example:
+    Application listens on 8080 → Service targetPort should be 8080.
+
+    If: targetPort: 8081 but application listens on 8080 → backend connection fails.
+
+    Pod can still be Ready because the application itself may be healthy; the Service routing can still be wrong.
+
+    For troubleshooting check: Ingress → Service → targetPort → EndpointSlice → Pod/application.
+
+    Important: 502 does not always mean targetPort is wrong; it means investigate the Ingress-to-backend connection.
+
+    Memory: Ingress → Service → Pod → correct port.
+
+98.Cross-Namespace NetworkPolicy
+    namespaceSelector → checks which namespace the source Pod is from.
+    podSelector → checks Pod labels, not the Pod name.
+    Same peer with both selectors → AND.
+    Both must match → traffic is allowed by that policy.
+    If either doesn't match → that policy doesn't allow the traffic.
+    Separate from entries → OR.
+    Communication can also require source egress permission.
+    NetworkPolicy must be enforced by the CNI.
+
+    Memory:
+
+    WHO = Pod labels + WHERE = Namespace → both must match.
+
+    NetworkPolicy checks WHO (Pod labels) + WHERE (namespace labels). Both must match for that policy to allow communication.
+
+99.StatefulSet Pod stuck in Terminating 
+
+    Terminating = deletion requested, but deletion not completed.
+
+    Why stuck?
+
+    Application not shutting down
+    Node/kubelet problem
+    Finalizer waiting for cleanup
+    Storage/volume issue
+
+    Important: Force delete removes the Pod object, but doesn't guarantee the old process stopped.
+
+    StatefulSet: Be careful because a replacement may use the same storage.
+
+100.Cluster Costs Doubled
+
+    Cost doubled = find what changed and why.
+
+    Check nodes, node size, PVs, Load Balancers, egress, logs, monitoring.
+    Compare before vs after the cost increase.
+    Cost can increase because of:
+    More resources
+    Longer runtime
+    Higher provider price
+    Requests ≠ actual usage ≠ billed capacity.
+    A runaway CronJob/workload can increase capacity.
+    Low current CPU does not prove historical overprovisioning.
+    Before deleting an unused-looking PV/Load Balancer, verify owner, traffic, recovery, and retention.
+    Memory cue
+
+    What increased? → Who owns it? → Can it safely be released?
