@@ -1,0 +1,132 @@
+67.Gateway API 
+    Key Points:
+        Gateway API is a newer, more flexible Kubernetes networking API.
+        Ingress is still supported; Gateway API provides a richer model for more complex environments.
+        GatewayClass → chooses the Gateway implementation.
+        Gateway → creates the actual entry point for external traffic.
+        Listener → defines how the Gateway listens, e.g. HTTP :80 or HTTPS :443.
+        HTTPRoute → defines routing rules such as /catalog → catalog-service.
+        Service → sends the traffic to the Pods.
+
+        GatewayClass = Which system? → NGINX, Envoy, etc.
+        Gateway = Door / entrance → the network entry point for your site/application.
+        Listener = How the door listens → which protocol + port it accepts, e.g. HTTP :80, HTTPS :443.
+        HTTPRoute = Where to go → which path/host should go to which Service
+
+        GatewayClass
+            ↓
+        Gateway
+            ├── Listener :80
+            └── Listener :443
+                ↓
+            HTTPRoute
+            ├── /catalog → catalog-service
+            ├── /users   → user-service
+            └── /orders  → order-service
+
+68.Kubernetes API Scale
+
+                Load Balancer
+                 /     |     \
+                ↓      ↓      ↓
+             API-1   API-2   API-3
+                \      |      /
+                     etcd
+
+    1. GET / LIST
+        Gets the current state of Kubernetes objects.
+        Example: kubectl get pods
+        Memory: GET/LIST = What exists now?
+    2. WATCH
+        Continuously receives changes/events to objects.
+        Avoids repeatedly polling the API server.
+        Memory: WATCH = Tell me when something changes.
+    3. Pagination
+        Gets large amounts of data in smaller chunks/pages.
+        Uses limit and continue at the Kubernetes API level.
+        Memory: Pagination = Don't send everything at once.
+    4. API Priority & Fairness (APF)
+        Manages competing API requests to the API server.
+        Prevents one type of API traffic from consuming all available capacity.
+        Memory: APF = Manage API traffic fairly.
+
+69.Policy & Supply Chain
+    Policy → Rules that control what Kubernetes allows.
+    Kyverno → Kubernetes-native policy engine.
+    Gatekeeper → Policy engine based on OPA/Rego.
+    Supply Chain → The journey of software from code → build → image → registry → Kubernetes.
+        Digest → Identifies the exact image content.
+        Signature → Verifies that an image was signed by a trusted source.
+        Provenance → Shows how/where the software was built.
+        Vulnerability scan → Finds known security vulnerabilities.
+
+
+70.Karpenter vs Cluster Autoscaler
+    Both are Kubernetes Node Autoscalers.
+    They add/remove nodes when the cluster needs more/less capacity.
+    Cluster Autoscaler → scales predefined Node Groups.
+    Karpenter → provisions a suitable node based on Pod requirements and NodePool constraints.
+    Both ultimately provide node capacity for Pods to run.
+
+    🧠 Memory:
+
+    Cluster Autoscaler = Add from existing node group
+    Karpenter = Provision a suitable node
+
+71.
+    Self-hosted = I build and manage Kubernetes.
+
+    EKS/GKE/AKS = Cloud provider gives me managed Kubernetes.
+
+    And importantly:
+
+    Managed Kubernetes doesn't mean the provider manages my application.
+    They manage the Kubernetes infrastructure covered by the selected service/mode; I still deploy and operate my application.
+
+72. API Deprecations
+    API deprecation → API is old and will eventually be removed.
+    Deprecated ≠ removed → it may still work for now.
+    Before upgrading Kubernetes, check deprecated APIs.
+    Migration may require changing fields, behavior, and controllers, not just apiVersion.
+    Test manifests and controllers against the target Kubernetes version.
+
+    🧠 Remember:
+    Deprecated → Migrate → Test → Upgrade
+
+73.Native Sidecar Containers 
+    Native sidecar = initContainer + restartPolicy: Always.
+    Starts before the main application container.
+    Kubernetes recognizes and manages it as a sidecar.
+    If it crashes/stops → automatically restarted.
+    Provides better startup and shutdown ordering than traditional sidecars.
+
+    Memory:
+
+    Native sidecar = Init container + Always restart + Sidecar lifecycle.
+
+74.HPA, VPA & KEDA 
+    HPA (Horizontal Pod Autoscaler) → Changes number of Pods based on metrics like CPU/memory.
+    VPA (Vertical Pod Autoscaler) → Changes CPU/memory resources of Pods.
+    KEDA (Kubernetes Event-driven Autoscaling) → Changes number of Pods based on external events/work like queues or schedules.
+    HPA: 2 → 5 Pods
+    VPA: 500Mi → 1Gi RAM
+    KEDA: 0 → 10 Pods based on events.
+    KEDA can commonly use HPA internally to perform scaling.
+    Cron is just one KEDA trigger; it is not required.
+    Node autoscaling is separate: it adds/removes worker Nodes when cluster capacity is insufficient.
+
+75.Zero-trust networking 
+    Zero Trust: Don't trust something just because it is inside the network.
+    Identity: Check who is making the request.
+    Authorization: Check what they are allowed to do.
+    NetworkPolicy: Controls which Pods can talk to which Pods.
+    RBAC: Controls access to Kubernetes resources.
+    TLS/mTLS: Protects communication with encryption/authentication.
+    NetworkPolicy alone ≠ Zero Trust; multiple security controls work together.
+
+    Memory: 🔐 Location is not permission.
+
+    Identity → Who are you?
+    RBAC     → What can you do?
+    NetworkPolicy → Who can talk to whom?
+    TLS      → Is the communication protected?
