@@ -1,0 +1,281 @@
+18.Kubernetes DNS
+    Pod IPs can change when Pods are recreated.
+    Service provides stable access to Pods.
+    DNS gives a name to the Service so applications don't need to use the Service IP.
+    Service metadata.name becomes its DNS name.
+
+    Example:
+
+    Service name: backend
+    DNS name: backend
+    Same namespace → backend
+    Different namespace → backend.namespace
+
+    Flow:
+
+    App → DNS name → Service → Pods
+
+    Memory: DNS name → Service → Pods
+
+19.ingress:
+    Ingress gives you one external entry point into the cluster, then routes the request to the correct Service.
+
+
+    suppose if we have an application http://example.com and it 3 to 4 differnetry pages within single extrypoint ie
+
+    http://example.com
+    http://example.com/api
+    http://example.com/payments
+    http://example.com/admin
+
+    before ingress:
+
+    if there need to run a application we use node port to get external ip for expose
+    api has som1 30001, payments has some 30002 and admin has 30003 so it diiftlut and not the corerect methodlogy
+
+    ie http://server-ip/30001
+        http://server-ip/30002
+        http://server-ip/30003
+
+    So then cloud Load Balancer came now each service has as load balancer ie
+
+                            |------ LB ---http://example.com/api
+                            |
+    http://example.com   ------------- LB ---http://example.com/payments
+                            |
+                            |-------LB ---http://example.com/admin
+
+    Here each swrvice needs a load balancer so it become cost efficeint
+
+    so ingrees came
+
+
+                                        |---------http://example.com/api
+                                        |
+    http://example.com ----Ingress -----------http://example.com/payments
+                                        |
+                                        |-------http://example.com/admin
+
+    So now ingress acts as Load balancer and also as reverse proxy ingress maps through path using layer 7 load balancer and maps throth path make request reach correct destrination or correct service
+
+    Now ingress controiller vs ingress resource
+
+    Ingress controller is actuially does the job 
+    ingress resources usually yaml file has these  of rules which has hostpath type of load balncer ie traffic or nginx etc
+
+21.Safe kubectl Workflows — Short Notes
+    kubectl explain → Get information about a Kubernetes field.
+    --dry-run=client → Test locally; request doesn't reach API Server.
+    --dry-run=server → Request reaches API Server for validation, but isn't saved.
+    kubectl diff → Compare live cluster state vs manifest to see what will change.
+    kubectl apply → Actually make the change.
+    kubectl get / rollout status → Verify the result.
+    Memory cue
+
+    Explain → Preview → Validate → Compare → Apply → Verify
+
+22.
+    Pod Lifecycle
+
+    Phase       → broad Pod lifecycle
+    Conditions  → detailed Pod conditions
+    Containers  → individual container state
+
+    Pending   → startup incomplete
+    Running   → container is running/starting
+    Succeeded → completed successfully
+    Failed    → completed unsuccessfully
+    Unknown   → state cannot be obtained
+
+    Running ≠ Ready
+
+    CrashLoopBackOff / ImagePullBackOff
+    → container/status reasons, NOT Pod phases
+
+    Phase
+    → Broad Pod lifecycle
+    → Pending / Running / Succeeded / Failed / Unknown
+
+    Conditions
+    → Detailed Pod-level status
+    → Scheduled? Initialized? Ready?
+
+    Containers
+    → Individual container status
+    → Waiting / Running / Terminated
+
+24.Multi-container patterns:
+
+    API + Helper       → Sidecar
+    API + Middleman    → Ambassador
+    API + Converter    → Adapter
+
+25.Orchestration choices
+
+    |               | Kubernetes                        | Docker Swarm                  | Amazon ECS                          |
+    | ------------- | --------------------------------- | ----------------------------- | ----------------------------------- |
+    | What it is    | Container orchestration platform  | Docker's orchestration system | AWS container orchestration service |
+    | Workload      | Pods + controllers                | Services + tasks              | Tasks + services                    |
+    | Configuration | Kubernetes API objects            | Docker service/stack config   | ECS task definitions + API          |
+    | Management    | You choose how/where to run it    | Docker-oriented               | AWS manages the control plane       |
+    | Extensions    | Huge ecosystem, CRDs, controllers | Docker-focused                | Strong AWS integrations             |
+
+26.Taints and tolations
+
+    Taint = a rule on the Node saying “Pods, stay away unless you are allowed.”
+    Toleration = permission on the Pod saying “I am allowed to be here.”
+
+    The 3 taint effects:
+        NoSchedule = don't allow
+        PreferNoSchedule = preferably don't allow
+        NoExecute = don't allow + evict
+
+27.Pod Placements
+
+    Affinity
+    → Pods should be NEAR each other
+    → potentially same node / zone
+
+    Anti-Affinity
+    → Pods should be AWAY from each other
+    → potentially different nodes / zones
+
+28.Horizontal Auto scaling 
+    Horizontal scaling = more Pods; Vertical scaling = more CPU/RAM per Pod.
+
+29.Resource nad node auto scaling:
+    Resource autoscaling = automatically adjusts CPU/RAM per Pod; Node autoscaling = automatically adds/removes worker Nodes based on cluster capacity.
+
+30.NetworkPolicy
+
+    Q1. What happens if no NetworkPolicy exists?
+    All pods can communicate freely.
+
+    Q2. Can NetworkPolicy block traffic to Services?
+    NetworkPolicies are enforced on pods, not Services. Traffic reaching a Service is ultimately evaluated against the backend pods' policies.
+
+    Q3. Does NetworkPolicy work without a supporting CNI plugin?
+    No. The cluster's CNI plugin must implement NetworkPolicy enforcement.
+
+    Q4. Can multiple NetworkPolicies apply to the same pod?
+    Yes. The allowed traffic is the union of all rules from all NetworkPolicies that select the pod.
+
+    Q5. Is NetworkPolicy stateful?
+    Yes. If ingress is allowed, the corresponding response traffic is automatically allowed, and similarly for allowed egress connections.
+
+31.RBAC
+    RBAC controls who can do what, and a ServiceAccount is the identity that a Pod/application uses when it needs to access the Kubernetes API
+
+32.Helm Packaging:
+    Helm → Package manager for Kubernetes.
+    Chart → Package containing Kubernetes resources.
+    Chart.yaml → Contains chart/package information like name, version, description.
+    values.yaml → Contains configuration values like replicas, image, port, CPU/memory.
+    templates/ → Contains Kubernetes YAML files with Helm variables.
+    Release → A deployed instance of a Helm Chart.
+
+    Easy memory:
+
+    Chart.yaml  → Package information
+    values.yaml → Configuration
+    templates/  → Kubernetes YAML templates
+
+34.Pod Disruption Budget (PDB) 
+
+    PDB protects application availability during voluntary disruptions by ensuring a minimum number of Pods remain available.
+
+    minAvailable → Minimum number of Pods that should remain available.
+    maxUnavailable → Maximum number of Pods that can be unavailable at the same time.
+    Voluntary disruption → Planned Pod eviction, such as node maintenance or kubectl drain.
+    Important: PDB does not protect against unexpected Pod crashes or node failures.
+
+35.Kustomize vs Helm 
+
+    Kustomize:
+        Customizes existing Kubernetes YAML files.
+        No templates required.
+        Uses base + overlays for different environments.
+        Think: "Customize my existing YAML."
+
+    Helm:
+        Packages Kubernetes resources into Charts.
+        Uses templates + values.yaml.
+        Good for reusable application deployments.
+        Think: "Package and deploy my application."
+
+    Kustomize → Customize YAML
+    Helm      → Package + Template + Deploy
+
+36.Mounted Files
+
+    Mounted files allow Kubernetes to make ConfigMap/Secret data available as files inside the Pod.
+
+    ConfigMap/Secret → Volume → File inside Pod
+    Kubernetes can update the mounted file when the configuration changes.
+    The application must reload/read the file again to use the new value.
+    If the application doesn't support reload → restart the Pod.
+
+    Memory:
+        Mounted file = Config/Secret available as a file inside the Pod
+
+37.Security Context
+    Security Context defines how a Pod/Container runs and what privileges it has.
+
+    runAsUser → Run container as a specific Linux user.
+    runAsNonRoot: true → Prevent container from running as root.
+    readOnlyRootFilesystem: true → Container cannot modify its root filesystem.
+    allowPrivilegeEscalation: false → Prevent processes from gaining higher privileges.
+    capabilities → Add or remove specific Linux privileges.
+    Can be configured at Pod level or Container level.
+    Main Goal:
+        Follow the principle of least privilege — give the container only the permissions it actually needs.
+
+38.Pod Security Admission Levels
+
+    Security level increases from left → right:
+
+    Privileged → Baseline → Restricted
+
+    Privileged 🟢 → No/very few restrictions; allows highly privileged Pods.
+    → Used when maximum flexibility is needed.
+    Baseline 🟡 → Blocks common dangerous settings.
+    → Good basic security for normal applications.
+    Restricted 🔴 → Strongest security; requires Pods to follow strict security best practices.
+    → Best for security-sensitive workloads.
+    Easy to remember
+
+    Privileged = Allow almost everything
+    Baseline = Block dangerous things
+    Restricted = Allow only secure configurations
+
+39.Lifecycle Hooks
+
+    Lifecycle Hooks = actions executed during container start/termination.
+
+    Hook	When?	Purpose
+    postStart	After container starts	Initialization/setup
+    preStop	Before container stops	Cleanup/graceful shutdown
+
+    Easy memory:
+
+    postStart → STARTUP action
+
+    preStop → SHUTDOWN action
+
+40.Service Mesh = infrastructure layer that manages service-to-service communication.
+
+    Main components:
+
+    Data Plane → Proxies handle traffic.
+    Control Plane → Manages/configures proxies.
+
+    Provides:
+
+    Security/mTLS
+    Traffic management
+    Retries & timeouts
+    Monitoring/observability
+
+    Easy memory:
+
+    Service Mesh = Don't make every application handle networking complexity; let the mesh handle it.
