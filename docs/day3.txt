@@ -1,0 +1,24 @@
+66.
+    Cost Allocation: Tracking Kubernetes/cloud costs by team, application, namespace, or workload.
+
+    Right-Sizing: Adjusting CPU, memory, and other resources to match actual workload requirements and avoid over/under-provisioning
+
+    Cost Allocation → WHO is spending?
+    Right-Sizing    → HOW MUCH resource does it need?
+
+67.Gateway API vs Ingress 
+
+    Ingress: Simple Kubernetes API for routing external HTTP/HTTPS traffic to services.
+
+    Gateway API: Modern, flexible traffic API that separates the entry point (Gateway) from routing rules (HTTPRoute).
+
+    Easy memory: Ingress = simpler → Gateway API = more structured & flexible
+
+    Ingress: Entry point + routing rules together.
+    Gateway API: Entry point and routing rules are separated.
+
+68.Kubernetes at scale = managing many nodes, pods, applications, and users reliably, efficiently, and automatically.
+
+    Kubernetes at Scale: Operating Kubernetes with large numbers of nodes, pods, workloads, and users while maintaining performance, availability, security, and manageability.
+
+    Key areas: resource management, scheduling, HA, networking, observability, and automation.
