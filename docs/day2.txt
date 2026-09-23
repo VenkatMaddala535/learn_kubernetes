@@ -1,0 +1,456 @@
+41.Kubernetes Monitoring = observing cluster, node, pod, container, and application health/performance.
+
+    Metrics Server → basic CPU/memory metrics
+    Prometheus → metric collection and storage
+    Grafana → dashboards/visualization
+    Alertmanager → alerts
+    kubectl top → quick CPU/memory check
+    Logs → help investigate why something went wrong
+
+42.Centralized logging = collecting logs from all Kubernetes components into one central system for storage, searching, and troubleshooting.
+
+    Typical flow:
+
+    Pod → Log Collector → Central Storage → Dashboard
+
+    Examples:
+
+    Collector → Fluent Bit / Fluentd / Vector
+    Storage → Elasticsearch / OpenSearch / Loki
+    Visualization → Kibana / Grafana
+    Collector is commonly deployed as a DaemonSet.
+
+43.Blue-Green vs Canary
+                            Blue-Green	            Canary
+    Old version	            Running	                Running
+    New version	            Running	                Running
+    Initial traffic to new	0%	                    Small %
+    Traffic switch	        Usually all at once	    Gradually
+    Testing with real users	Usually no	            Yes
+    Rollback	            Very fast	            Reduce/stop canary traffic
+    Main idea	            Switch	                Gradually increase
+    Easy way to remember 🧠
+
+    Blue-Green:
+
+    🟦 OLD → 🟩 NEW
+    Switch
+
+    Canary:
+
+    🟦 OLD 90% → 🟩 NEW 10%
+    Gradually increase
+
+    Kubernetes perspective
+
+    Both strategies can be implemented using Kubernetes Deployments + Services, while more advanced traffic splitting is commonly handled with tools such as Ingress controllers or service meshes.
+
+    Short notes:
+
+    Blue-Green: Run old and new versions → switch all traffic to new version.
+
+    Canary: Run old and new versions → send small percentage of traffic to new version → monitor → gradually increase traffic.
+
+44.ResourceQuota & LimitRange 
+
+    ResourceQuota → Limits total resources of a namespace.
+    Example: Namespace can use max 4 CPU + 8Gi memory.
+    Can also limit number of Pods, Services, etc.
+    LimitRange → Sets resource limits for individual containers/Pods.
+    Example: One container can use max 2 CPU + 2Gi memory.
+    Can define minimum, maximum, and default CPU/memory.
+    🧠 Remember
+
+    ResourceQuota = Namespace total limit
+    LimitRange = Individual container limit
+
+45.Networking
+
+    Kubernetes Networking enables communication between Pods, Services, and external users.
+
+    CNI → Provides Pod networking.
+    Service → Provides stable IP/DNS access to Pods.
+    Ingress → Routes external HTTP/HTTPS traffic to Services.
+    NetworkPolicy → Controls allowed network traffic between Pods.
+
+    Flow:
+
+    CNI → Pod networking
+    Service → Stable Pod access
+    Ingress → External HTTP/HTTPS access
+    NetworkPolicy → Traffic control
+    CLI Plugins
+
+    CLI plugins extend kubectl with additional commands and functionality.
+
+    kubectl → Kubernetes CLI.
+    Plugin → Adds extra functionality.
+    Krew → Plugin manager used to discover, install, and manage kubectl plugins.
+
+    Remember:
+
+    Networking = How Kubernetes components communicate.
+    CLI plugins = How we extend kubectl.
+
+46.Headless Service 
+
+    A Headless Service has no ClusterIP (clusterIP: None) and provides DNS-based discovery of individual Pod IPs.
+
+    No virtual Service IP
+    DNS returns individual Pod IPs
+    Useful for StatefulSets
+    Provides stable DNS names for individual Pods
+
+    Remember:
+
+    Headless Service = Pod discovery, not load balancing.
+
+
+47.Ephemeral Container
+
+    A temporary container added to an existing Pod for troubleshooting.
+
+    kubectl debug
+
+    Command used to debug running Pods or nodes.
+
+    kubectl debug -it <pod> --image=<debug-image> --target=<container>
+    Main purpose
+    Application image
+        ↓
+    Missing debugging tools
+        ↓
+    kubectl debug
+        ↓
+    Temporary debug container
+        ↓
+    Troubleshoot without rebuilding app image
+    Remember
+
+    Ephemeral container = temporary debugging container inside an existing Pod.
+
+    kubectl debug = convenient command to create/use debugging environments.
+
+
+48.Topology Spread Constraints:
+    A Kubernetes scheduling feature used to distribute Pods evenly across nodes, zones, or other topology domains for high availability and fault tolerance.
+
+    Field	Meaning
+    topologyKey	Where to spread: node, zone, etc.
+    maxSkew	Maximum allowed difference in Pod counts
+    whenUnsatisfiable	What to do if spreading isn't possible
+    labelSelector	Which Pods should be considered
+
+    Topology Spread
+        ↓
+    Don't concentrate Pods
+        ↓
+    Spread them across nodes/zones
+        ↓
+    Better 
+    
+49.Priority
+
+    Defines the importance of a Pod for scheduling.
+
+    priorityClassName: high-priority
+
+    Higher value → higher priority.
+
+    Preemption
+
+    When a high-priority Pod cannot be scheduled because of insufficient resources, Kubernetes can evict lower-priority Pods to make room.
+
+    Priority
+    ↓
+    Pod importance
+
+    Preemption
+    ↓
+    Evict lower priority Pod
+    ↓
+    Make room for higher priority Pod
+    Easy memory
+
+    Priority decides WHO is important.
+
+    Preemption makes space for the important Pod
+
+50.Cert-manager
+
+    Kubernetes tool that automates obtaining, storing, and renewing TLS certificates.
+
+    TLS
+
+    Provides:
+
+    🔒 Encryption
+    Authentication of the server
+    Secure HTTPS communication
+
+    Easy memory:
+
+    Ingress handles HTTPS traffic.
+
+    Secret stores the certificate and private key.
+
+    cert-manager obtains and renews the certificate.
+
+    Issuer/ClusterIssuer tells cert-manager which CA to use.
+
+
+51.GitOps Tools 
+    Argo CD
+        GitOps tool for Kubernetes.
+        Watches the Git repository for Kubernetes manifests.
+        Compares Git (desired state) with Kubernetes (actual state).
+        Detects mismatch/drift and reconciles Kubernetes to match Git.
+        Provides a useful Web UI for viewing applications and sync/health status.
+        Git → Argo CD → Kubernetes
+    Flux
+        Another GitOps tool for Kubernetes.
+        Watches Git for configuration changes.
+        Compares desired state with actual cluster state.
+        Automatically reconciles Kubernetes with Git.
+        More Kubernetes-native/modular approach.
+        Git → Flux → Kubernetes
+    ⭐ Key point
+        Argo CD and Flux are alternatives — normally you choose one, not both.
+
+52.External Secrets Operator (ESO)
+
+    ESO synchronizes secrets from external secret managers into Kubernetes Secrets.
+
+    External Secret Manager
+            ↓
+            ESO
+            ↓
+    Kubernetes Secret
+            ↓
+            Pod
+    Why use it?
+    Don't store actual passwords/API keys in Git.
+    Works well with GitOps.
+    Automatically synchronizes/updates secrets.
+    Supports external secret stores such as Vault and cloud secret managers.
+    Easy memory
+
+    Git stores the instructions, not the actual secret.
+
+    External Secret Manager stores the real secret.
+
+    ESO brings the secret into Kubernetes as a Kubernetes Secret.
+
+53.
+    Image Pull
+
+    Kubernetes downloads the container image from a container registry to the node before starting the container.
+
+    Pod → Node → Container Registry → Image
+    Registry Authentication
+
+    Required when the container image is stored in a private registry.
+
+    Use:
+
+    imagePullSecrets:
+    - name: registry-secret
+    Common errors
+    ErrImagePull
+    ImagePullBackOff
+
+    usually indicate problems such as:
+
+    Wrong image name/tag
+    Registry unreachable
+    Authentication failure
+    Missing imagePullSecret
+    Easy memory
+
+    Public image → usually no credentials.
+
+    Private image → registry credentials needed.
+
+    imagePullSecrets → tells Kubernetes which credentials to use to pull the image
+
+54.
+    CoreDNS customization simply means changing the DNS rules used inside the Kubernetes cluster.
+
+    CoreDNS resolves Kubernetes DNS names; CoreDNS customization lets us add/change DNS rules such as forwarding certain domains to custom DNS servers.
+
+55.EndpointSlices & Endpoints — Short Notes
+    Service → provides a stable IP/DNS name to access Pods.
+    Service Selector → identifies which Pods belong to the Service using labels.
+    EndpointSlice → stores the current IP addresses and ports of those matching Pods.
+    Endpoints → older mechanism for storing the same backend information.
+    EndpointSlice is the modern and scalable replacement for Endpoints.
+    When Pods are created/deleted/replaced, Kubernetes automatically updates EndpointSlices.
+    Flow
+    Service Selector
+        ↓
+    Matching Pods
+        ↓
+    EndpointSlice
+        ↓
+    Pod IPs
+        ↓
+    Traffic routed to Pods
+
+    Remember:
+
+    Service = stable access point
+    EndpointSlice = current list of backend Pod IPs
+
+56.
+    Kubernetes Cluster State — Short Notes 📒
+    Cluster state = information about the current/configured condition of the Kubernetes cluster.
+    Includes resources like Pods, Nodes, Deployments, Services, ConfigMaps, Secrets, etc.
+    Desired state = what we want the cluster to look like.
+    Actual state = what is currently running.
+    Kubernetes continuously works to make Actual State = Desired State.
+    etcd stores the cluster state.
+    API Server is the gateway through which Kubernetes components access that state.
+
+    Remember:
+
+    Cluster state = what Kubernetes knows about the cluster.
+    etcd = where that information is stored.
+
+57.API Request Flow:
+
+    kubectl
+    ↓
+    API Server
+    ↓
+    Authentication → Who are you?
+    ↓
+    Authorization → Are you allowed?
+    ↓
+    Admission → Should we allow/modify it?
+    ↓
+    Validation → Is it valid?
+    ↓
+    etcd → Store it
+    Admission
+
+    Admission controls requests after authorization and before the object is persisted.
+
+    It can validate, reject, or modify Kubernetes API requests.
+
+    Remember:
+    Authentication = Who?
+    Authorization = Allowed?
+    Admission = Policy/modify?
+    etcd = Store?
+
+58.CRD & Operator — Short Notes 📒
+    CRD (Custom Resource Definition) → Defines a new resource type in Kubernetes.
+    CR (Custom Resource) → Actual object created using that CRD.
+    Operator → A controller/program that watches the CR and automates its management.
+    Example
+    CRD      → Defines "Venkat"
+    CR       → kind: Venkat
+    Operator → Watches Venkat and performs the required actions
+
+    Remember:
+
+    CRD = WHAT
+    Operator = HOW
+
+59.
+
+    Filtering: Removes nodes that cannot run the Pod.
+
+    Scoring: Gives scores to remaining nodes based on preferences, then selects the highest-scoring node.
+
+    Flow:
+
+    Pod → Filter → Score → Select best Node
+
+              New Pod
+                 ↓
+            Scheduler
+                 ↓
+             FILTERING
+        ┌────────┼────────┐
+        ↓        ↓        ↓
+      Node A   Node B   Node C
+        ❌       ✅       ✅
+                 ↓
+              SCORING
+                 ↓
+        Node B = 60
+        Node C = 90
+                 ↓
+            Choose Node C
+
+60.CRI (Container Runtime Interface): Standard interface used by kubelet to communicate with container runtimes.
+
+    containerd: General-purpose container runtime commonly used by Kubernetes.
+
+    CRI-O: Lightweight container runtime specifically designed for Kubernetes and CRI.
+
+    containerd and CRI-O are alternatives, while CRI is the communication interface.
+
+    CRI = HOW Kubernetes talks to runtime
+
+    containerd = Runtime
+    CRI-O      = Runtime
+
+                Kubernetes
+                  ↓
+               Kubelet
+                  ↓
+                 CRI
+              ↙       ↘
+        containerd    CRI-O
+              ↓          ↓
+          Containers  Containers
+
+
+61.Multi-cluster: Running and managing multiple independent Kubernetes clusters for isolation, HA, disaster recovery, scalability, or geographical distribution.
+
+    Active-Passive: One cluster serves traffic; another is standby.
+
+    Active-Active: Multiple clusters serve traffic simultaneously.
+
+    Multi-Region: Clusters deployed in different geographical regions.
+
+
+62.
+
+    Security Hardening: Applying security best practices to reduce Kubernetes attack surface.
+
+    kube-bench: Tool that checks Kubernetes configuration against the CIS Kubernetes Benchmark and reports security findings.
+
+    Important: kube-bench checks security; it does not automatically harden the cluster.
+
+    Security hardening: Making a Kubernetes cluster more secure by reducing security risks and vulnerabilities.
+    kube-bench: A tool that checks whether Kubernetes follows CIS security best practices
+
+
+63.
+    Mesh Identity: Provides secure identities and authentication between services, commonly using mTLS.
+
+    Mesh Traffic: Controls and manages service-to-service traffic such as routing, retries, timeouts, and load balancing.
+
+    Mesh Observability: Provides visibility into service communication through metrics, logs, and distributed traces.
+
+64.
+    Cluster Upgrade Planning: Preparing and executing a Kubernetes version upgrade safely while maintaining application availability and compatibility.
+
+    Main steps: check compatibility → check deprecated APIs → backup → upgrade control plane → upgrade worker nodes → verify applications.
+
+    Check → Backup → Test → Upgrade → Verify → Rollback if necessary
+
+65.Disaster Recovery
+
+    Disaster Recovery (DR): Plan to recover applications and data after failure or data loss.
+
+    Backup: Keeping a recoverable copy of important data.
+
+    Snapshot: Point-in-time copy of storage/data used for backup and recovery.
+
+    Basic flow: Backup → Disaster → Restore → System recovered
+
+    
