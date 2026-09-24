@@ -1,0 +1,223 @@
+Kubernetes Topics — Organized by Concept
+1. Core Kubernetes
+    01 — Kubernetes Purpose
+    02 — Cluster Architecture
+    08 — kubectl Essentials
+    09 — Resource Metadata
+    15 — Resource Management
+    25 — Orchestration Choices
+    71 — Managed Kubernetes
+    80 — Garbage Collection
+
+2. Pods
+    03 — Pods
+    12 — Application Probes
+    22 — Pod Lifecycle
+    23 — Restart Policies
+    27 — Pod Placement
+    34 — Disruption Budgets / PDB
+    39 — Lifecycle Hooks
+    47 — Ephemeral Debugging
+    49 — Priority and Preemption
+
+3. Containers
+    14 — Init Containers
+    24 — Multi-Container Patterns
+    53 — Image Pulls
+    60 — Container Runtimes
+    73 — Native Sidecars
+    78 — Runtime Classes
+
+4. Deployments & ReplicaSets
+    04 — ReplicaSets and Deployments
+    16 — Rollouts and Rollback
+    43 — Release Strategies
+    72 — API Deprecations
+    79 — Progressive Delivery
+
+5. StatefulSets
+    17 — StatefulSets and Deployments
+    99 — StatefulSet Pod Stuck in Terminating
+
+6. Jobs & CronJobs
+    11 — Jobs and CronJobs
+    109 — CronJob Accumulation
+
+7. DaemonSets
+    10 — DaemonSets
+
+8. Services
+    05 — Services
+    46 — Headless Services
+    55 — EndpointSlices
+    18 — Service DNS
+    86 — Service Routing
+
+9. Ingress & Gateway
+    19 — Ingress
+    67 — Gateway API
+    97 — Ingress 502
+
+10. DNS
+    18 — Service DNS
+    54 — CoreDNS
+    91 — Intermittent DNS
+    106 — External DNS
+
+11. Networking
+    45 — Networking and CNI
+    30 — Network Policies
+    75 — Zero-Trust Networking
+    98 — Cross-Namespace NetworkPolicy
+    40 — Service Mesh Foundations
+    63 — Mesh Traffic and Identity
+    69 — Policy and Supply Chain
+    68 — Large Clusters
+    86 — Service Routing
+
+12. ConfigMaps & Secrets
+    07 — ConfigMaps and Secrets
+    13 — Configuration Delivery
+    36 — Configuration Reloading
+    52 — External Secrets
+    77 — Secret Encryption
+    93 — Secret Log Leak
+
+13. Security
+    21 — Safe kubectl Workflows
+    31 — RBAC and Service Accounts
+    37 — Security Context
+    38 — Pod Security Admission
+    50 — Certificates and TLS
+    62 — Security Hardening
+    69 — Policy and Supply Chain
+    75 — Zero-Trust
+    76 — Audit Logging
+    77 — Secret Encryption
+    110 — Nonroot Enforcement
+
+14. Packaging & Configuration Management
+    32 — Helm Packaging
+    35 — Kustomize and Helm
+    51 — GitOps
+    107 — Helm Pending Upgrade
+
+15. CRDs & Operators
+    58 — CRDs and Operators
+    94 — Operator Upgrade
+
+16. Storage
+    20 — Persistent Storage
+    33 — Storage Classes
+    36 — Mounted Files / Configuration Reloading
+    44 — Quotas and LimitRanges
+    88 — PVC Pending
+    96 — Disk Pressure
+    108 — Wrong PV Data
+
+17. Resource Management & Quotas
+    06 — Namespaces and Quotas
+    15 — Resource Management
+    44 — Quotas and LimitRanges
+    66 — Cost and Rightsizing
+    89 — OOMKilled
+    100 — Cost Spike
+
+18. Nodes & Scheduling
+    26 — Node Placement
+    48 — Topology Spread Constraints
+    59 — Scheduler Internals
+    70 — Node Autoscalers
+    85 — Node NotReady
+    96 — Disk Pressure
+    68 — Large Clusters
+
+19. Autoscaling
+    28 — Horizontal Autoscaling
+    29 — Resource and Node Autoscaling
+    70 — Node Autoscalers
+    74 — Coordinated Autoscaling
+    95 — HPA Flapping
+    89 — OOMKilled (related troubleshooting)
+
+20. Monitoring & Logging
+    41 — Kubernetes Monitoring
+    42 — Centralized Logging
+    76 — Audit Logging
+    93 — Secret Log Leak
+
+21. etcd & API / Control Plane
+    56 — etcd
+    57 — API Admission
+    92 — etcd Space
+    102 — Admission Webhook Outage
+    105 — API Overload
+    72 — API Deprecations
+
+22. Cluster Management
+    61 — Multiple Clusters
+    64 — Cluster Upgrades
+    65 — Disaster Recovery
+    68 — Large Clusters
+    71 — Managed Kubernetes
+    100 — Cost Spike
+    66 — Cost and Rightsizing
+
+23. Troubleshooting / Real-World Scenarios
+
+    Pod / Container problems:
+        81 — Pod Pending
+        82 — CrashLoopBackOff
+        83 — ImagePullBackOff
+        84 — Container Creating
+        89 — OOMKilled
+        110 — Nonroot Enforcement
+
+    Node problems
+        85 — Node NotReady
+        96 — Disk Pressure
+
+    Service / Networking problems
+        86 — Service Routing
+        91 — Intermittent DNS
+        97 — Ingress 502
+        98 — Cross-Namespace Policy
+        106 — External DNS
+
+    Deployment problems
+        87 — Rollout Stuck
+        90 — Rolling 503
+        107 — Helm Pending Upgrade
+
+    Storage problems
+        88 — PVC Pending
+        108 — Wrong PV Data
+        Security / Secret problems
+        93 — Secret Log Leak
+        103 — Expired Certificates
+        102 — Admission Webhook Outage
+
+    Control-plane problems
+        92 — etcd Space
+        105 — API Overload
+        101 — Namespace Finalizers
+
+    Stateful / Operator problems
+        94 — Operator Upgrade
+        99 — StatefulSet Terminating
+
+    PDB / Jobs
+        104 — PDB Drain
+        109 — CronJob Accumulation
+
+    Cost
+        100 — Cost Spike
+
+24. Maintenance & Operations
+    48 — Topology Spread Constraints
+    64 — Cluster Upgrades
+    65 — Disaster Recovery
+    80 — Garbage Collection
+    101 — Namespace Finalizers
+    104 — PDB Drain
+    100 — Cost Spike
