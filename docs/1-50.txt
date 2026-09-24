@@ -1,0 +1,640 @@
+11.Job and CronJob
+    Job is a Kubernetes resource used to run a one-time task.
+        It creates one or more Pods and makes sure the task successfully completes.
+        After completion, the Job is marked Complete.
+
+        Examples:
+
+        Database migration
+        Backup
+        Data processing
+        One-time script
+    CronJob
+        CronJob is used to run Jobs repeatedly according to a schedule.
+        It uses a cron expression to decide when to create a Job.
+        The cron format is:
+
+12.Application Probes — Short Notes
+    Readiness Probe → Checks whether the application is ready to accept traffic.
+        Failure → Pod is removed from Service endpoints.
+        Container is not restarted.
+    Liveness Probe → Checks whether the application is still working/alive.
+        Repeated failure → Container is restarted.
+    Startup Probe → Checks whether the application has finished starting.
+        Useful for slow-starting applications.
+        While startup probe is running, liveness/readiness probes are not acted on.
+    Common settings
+        periodSeconds → How often the probe runs.
+        initialDelaySeconds → Wait before the first probe.
+        failureThreshold → Number of consecutive failures before failure is declared.
+        successThreshold → Number of consecutive successes required.
+        timeoutSeconds → Maximum time allowed for one probe.
+
+    Startup = Started? | Readiness = Ready for traffic? | Liveness = Still alive?
+
+    # 1. Startup Probe
+          startupProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            failureThreshold: 10
+
+    # 2. Readiness Probe
+            readinessProbe:
+                httpGet:
+                    path: /
+                    port: 80
+                periodSeconds: 5
+
+    # 3. Liveness Probe
+            livenessProbe:
+                httpGet:
+                    path: /
+                    port: 80
+                periodSeconds: 10
+
+13.Environment Variables & Configuration Volumes
+    Environment Variable = configuration value provided to the container process.
+        Can come directly from YAML, ConfigMap, or Secret.
+        Available when the container starts.
+        Changing the ConfigMap/Secret does not change an existing environment variable.
+        Usually requires a Pod restart/rollout.
+    Configuration Volume
+        Configuration Volume = ConfigMap/Secret mounted as files inside the container.
+        Useful for configuration files, certificates, etc.
+        Mounted files can eventually update when the ConfigMap/Secret changes.
+        Application must reread/reload the file to use the new value.
+        subPath mounted files do not automatically update.
+
+    ENV → value → restart needed
+    Volume → file → can refresh → app must reread         
+
+
+                ConfigMap
+                    │
+            ┌───────┴────────┐
+            ↓                ↓
+    Environment          Volume
+    Variable              File
+            ↓                ↓
+    APP_ENV=prod      /etc/app/app.conf
+
+14.Init Container
+    An init container is a container inside a Pod that performs pre-work before the main/application container starts.
+    Pod
+    │
+    ├── Init Container
+    │     └── creates config.yaml
+    │
+    └── Main Container
+        └── reads config.yaml
+
+    Init        → BEFORE       → Prepare
+    Sidecar     → ALONGSIDE    → Help
+    Ambassador  → ALONGSIDE    → Proxy
+    Adapter     → ALONGSIDE    → Convert
+    Ephemeral   → TEMPORARY    → Debug
+
+    Pod
+    │
+    ├── Init container       → runs first
+    │
+    ├── Main container       → application
+    │
+    ├── Sidecar               → helps application
+    │
+    ├── Ambassador            → proxy
+    │
+    └── Adapter               → transforms data
+
+15.Resource Managemnat
+    LimitRange is a Namespace-level Kubernetes object.
+    Provides default requests/limits for containers.
+    Can also define minimum and maximum allowed resources.
+    If a Pod doesn't specify resources, LimitRange can apply the defaults.
+
+16.Roll-out and Roll back
+    Rollout = new version
+    Rollback = old version
+    Rolling Update = gradually replace Pods
+    Canary = gradually expose traffic to new version
+
+18.Kubernetes DNS lets Pods find Services by name instead of IP.
+    Same namespace:
+        service-name
+    Different namespace:
+        service-name.namespace
+    Full DNS:
+        service-name.namespace.svc.cluster.local
+
+    Normal Service:
+        DNS → Service IP → Pods
+
+    Headless Service:
+        DNS → Pod IPs
+
+    Headless Service — Short Notes
+        Mainly used with StatefulSets / stateful applications like databases.
+        clusterIP: None → no virtual ClusterIP.
+        DNS returns individual Pod IPs instead of one Service IP.
+        Allows communication with a specific Pod using stable DNS names.
+
+        Example:
+
+            postgres-0.postgres.namespace.svc.cluster.local
+            StatefulSet provides stable Pod names like postgres-0, postgres-1, etc.
+            Headless Service does not decide primary/replica; the database handles that.
+
+        Memory:
+            Normal Service → Service IP
+            Headless Service → Pod IPs
+
+20.Persistent Storage — Short Notes
+    Persistent Storage → Keeps data even if a Pod is deleted/recreated.
+    PV (PersistentVolume) → Actual storage resource available to Kubernetes.
+    PVC (PersistentVolumeClaim) → Pod/application requests storage through a claim.
+    StorageClass (SC) → Defines how storage should be dynamically provisioned.
+    PV → Cluster-scoped.
+    PVC → Namespaced.
+    StorageClass → Cluster-scoped.
+
+    Easy to remember:
+
+    PVC asks → PV provides → StorageClass provisions
+
+26.Taints and tolations
+
+    Taint = a rule on the Node saying “Pods, stay away unless you are allowed.”
+    Toleration = permission on the Pod saying “I am allowed to be here.”
+
+    The 3 taint effects:
+        NoSchedule = don't allow
+        PreferNoSchedule = preferably don't allow
+        NoExecute = don't allow + evict
+
+    Node Affinity = Pod selects nodes based on node labels.
+
+    required → must match
+    preferred → try to match
+    Labels are on Nodes; affinity rules are in the Pod
+
+27.Pod Placements
+    Affinity
+    → Pods should be NEAR each other
+    → potentially same node / zone
+
+    Anti-Affinity
+    → Pods should be AWAY from each other
+    → potentially different nodes / zones
+
+28.Horizontal Auto scaling 
+    Horizontal scaling = more Pods; Vertical scaling = more CPU/RAM per Pod.
+
+29.Vertical & Node Autoscaling
+
+    HPA = Copies | VPA = Size | Node Autoscaler = Machines
+
+    HPA
+    Changes the number of Pods.
+    Example: 2 Pods → 5 Pods.
+    Usually reacts to CPU, memory, or other metrics.
+    VPA
+    Changes/recommends CPU and memory resources for a Pod.
+    Example: 500m CPU → 1 CPU.
+    It does not create more Pods.
+    VPA Off = recommendation only; it doesn't change the Pod.
+    Node Autoscaler
+    Changes the number of nodes/machines.
+    First, Kubernetes tries to place Pods on existing nodes.
+    If no suitable node has enough capacity → Pod becomes Pending.
+    Autoscaler can then add a suitable node.
+
+30.NetworkPolicy — Short Notes
+    NetworkPolicy controls Pod-to-Pod communication.
+    Without a policy, Pods can generally communicate with each other.
+    Ingress = traffic coming into a Pod.
+    Egress = traffic going out of a Pod.
+    Source Pod = Egress, Destination Pod = Ingress.
+    Labels + podSelector identify which Pods the policy applies to and which Pods are allowed.
+    namespaceSelector is used when controlling traffic between different namespaces.
+    Common approach: Default Deny → explicitly allow required traffic.
+
+    NetworkPolicy
+    │
+    ├── Ingress → traffic INTO the Pod
+    ├── Egress  → traffic OUT of the Pod
+    │
+    ├── podSelector
+    │   └── identifies Pods using labels
+    │
+    └── namespaceSelector
+        └── identifies a namespace
+
+    Allows only backend → database:
+
+        apiVersion: networking.k8s.io/v1
+        kind: NetworkPolicy
+        metadata:
+        name: database-policy
+        spec:
+            podSelector:
+                matchLabels:
+                    app: database
+
+            policyTypes:
+                - Ingress
+
+            ingress:
+                - from:
+                    - podSelector:
+                        matchLabels:
+                            app: backend
+
+32.Helm 
+    Chart.yaml → Contains metadata/details about the Helm chart (package).
+    values.yaml → Contains configurable values/settings for the application.
+        replicas
+        image & tag
+        ports
+        environment variables
+        resources
+    templates/ → Contains Kubernetes YAML templates.
+
+    Chart.yaml  → What is this package?
+    values.yaml → What settings should it use?
+    templates/  → What Kubernetes resources should be created?
+
+34.Pod Disruption Budget (PDB) 
+
+    PDB protects application availability during voluntary disruptions by ensuring a minimum number of Pods remain available.
+
+    minAvailable → Minimum number of Pods that should remain available.
+    maxUnavailable → Maximum number of Pods that can be unavailable at the same time.
+    Voluntary disruption → Planned Pod eviction, such as node maintenance or kubectl drain.
+    Important: PDB does not protect against unexpected Pod crashes or node failures.
+
+    PDB protects application availability during planned/voluntary disruptions.
+    minAvailable → minimum Pods that must remain available.
+    maxUnavailable → maximum Pods that can be unavailable.
+    Example: replicas: 5, minAvailable: 4 → during maintenance, Kubernetes tries to keep at least 4 Pods available.
+    Voluntary disruptions → kubectl drain, node maintenance, planned eviction.
+    ❌ Does not protect against unexpected Pod crashes or node failures.
+
+    Easy memory:
+
+    Replicas = how many Pods I want.
+    PDB = how many Pods I can safely lose during maintenance.
+
+35.Kustomize
+
+    Kustomize = customize existing Kubernetes YAML.
+
+    Base YAML
+        ↓
+    Kustomize
+        ↓
+    Dev / Prod customized YAML
+
+    Helm → generates YAML using templates + values
+    Kustomize → modifies existing YAML
+
+36.Configuration Reloading 
+    Configuration reloading = applying changed configuration without necessarily restarting the Pod.
+    Mounted ConfigMap/Secret volume → Kubernetes can update the mounted files.
+    Application must reread/watch the file to use the new value.
+    Environment variables → do not update in a running container.
+    subPath mount → does not receive automatic projected updates.
+    If configuration is provided through environment variables, restart/rollout the Pod to get the new value.
+    File update by Kubernetes ≠ application automatically reloading it.
+
+    Memory:
+    ConfigMap → mounted file → file updates → app reads again → new config
+
+    Short note 📝
+
+        ConfigMap/Secret volume → file can update → application rereads → new config
+
+        Environment variable → no automatic update → restart required
+
+37 Security Context — Short Notes
+    Security Context → Controls how a Pod/Container runs and what privileges it has.
+    runAsUser: 1000 → Run as Linux user 1000.
+    runAsNonRoot: true → Prevent running as root.
+    readOnlyRootFilesystem: true → Cannot modify root filesystem.
+    allowPrivilegeEscalation: false → Cannot gain higher privileges.
+    capabilities → Add/remove specific Linux privileges.
+    Can be set at Pod or Container level.
+    Main goal → Least privilege: give only the permissions the container needs.
+
+38.Pod Security Administration
+    PSS → What security rules/profile should be checked?
+    PSA → How should Kubernetes apply/check those rules?
+
+    Pod Security
+    │
+    ├── Pod Security Standards (PSS)
+    │   ├── Privileged
+    │   ├── Baseline
+    │   └── Restricted
+    │
+    └── Pod Security Admission (PSA)
+        ├── enforce
+        ├── warn
+        └── audit
+
+    ❌ Block the violating Pod	enforce
+    ⚠️ Allow it but tell the user	warn
+    📝 Allow it but record the violation	audit
+
+39.Container Lifecycle Hooks — Short Notes
+    Lifecycle hooks allow us to perform actions during container startup or shutdown.
+    postStart → runs when the container starts.
+        Example: print "Container started".
+        No guarantee that it runs before the main application.
+    preStop → runs before graceful container termination.
+        Example: print "Container is going down" or start cleanup.
+    preStop time is included in the termination grace period.
+    Hooks should be short and safe to repeat.
+    If something must happen before the application starts, use an init container.
+
+    Memory:
+    postStart → startup action
+    preStop → shutdown action
+    init container → must finish before app starts
+
+    spec:
+        containers:
+            - name: app
+            image: busybox
+            command: ["sh", "-c", "echo 'Application running'; sleep 3600"]
+
+            lifecycle:
+                postStart:
+                exec:
+                    command:
+                    - sh
+                    - -c
+                    - echo "Container has started"
+
+                preStop:
+                exec:
+                    command:
+                    - sh
+                    - -c
+                    - echo "Container has Dead"
+
+40.Service Mesh — Short Notes
+    Service Mesh manages communication between microservices.
+    It uses proxies to handle service-to-service traffic.
+    Proxies can handle:
+        Retry
+        Timeout
+        mTLS/security
+        Traffic routing
+        Metrics/tracing
+        Access policies
+    We configure/declare rules, and the proxy applies them automatically.
+    Kubernetes Service → provides connectivity.
+    Service Mesh → manages how that communication behaves.
+
+    Kubernetes Service = Reach
+    Service Mesh = Manage communication
+
+41.Kubernetes Monitoring = observing cluster, node, pod, container, and application health/performance.
+
+    Metrics Server → basic CPU/memory metrics
+    Prometheus → metric collection and storage
+    Grafana → dashboards/visualization
+    Alertmanager → alerts
+    kubectl top → quick CPU/memory check
+    Logs → help investigate why something went wrong
+
+    Prometheus → collects metrics/numbers → CPU, RAM, latency, request rate, etc.
+    Loki → collects logs/text → errors, warnings, application messages, etc.
+    Grafana → visualizes both → graphs, charts, tables, and also log views.
+
+    Prometheus → Numbers/Metrics ──┐
+                                   ├──→ Grafana → Visualize
+    Loki → Logs/Text ──────────────┘
+
+    Prometheus = Numbers 📊
+    Alertmanager = Alarm 🚨
+    Loki = Logs 📜
+    Grafana = Visualize 📈
+    Kubernetes kubectl top → Pods/Nodes
+
+                 Kubernetes
+                     │
+          ┌──────────┴──────────┐
+          │                     │
+       Metrics                 Logs
+          │                     │
+   metrics-server              Loki
+          │                     │
+   kubectl top              Log information
+          │                     │
+          └──────────┬──────────┘
+                     │
+              Prometheus
+              (metrics)
+                     │
+              Alertmanager
+                 🚨 alerts
+                     │
+                   Grafana
+              📊 visualization
+
+42.Centralized logging = collecting logs from all Kubernetes components into one central system for storage, searching, and troubleshooting.
+
+    Typical flow:
+
+    Pod → Log Collector → Central Storage → Dashboard
+
+    Examples:
+
+    Collector → Fluent Bit / Fluentd / Vector
+    Storage → Elasticsearch / OpenSearch / Loki
+    Visualization → Kibana / Grafana
+    Collector is commonly deployed as a DaemonSet.
+
+43.Blue-Green vs Canary
+                            Blue-Green	            Canary
+    Old version	            Running	                Running
+    New version	            Running	                Running
+    Initial traffic to new	0%	                    Small %
+    Traffic switch	        Usually all at once	    Gradually
+    Testing with real users	Usually no	            Yes
+    Rollback	            Very fast	            Reduce/stop canary traffic
+    Main idea	            Switch	                Gradually increase
+    Easy way to remember 🧠
+
+    Blue-Green:
+
+    🟦 OLD → 🟩 NEW
+    Switch
+
+    Canary:
+
+    🟦 OLD 90% → 🟩 NEW 10%
+    Gradually increase
+
+    Kubernetes perspective
+
+    Both strategies can be implemented using Kubernetes Deployments + Services, while more advanced traffic splitting is commonly handled with tools such as Ingress controllers or service meshes.
+
+    Short notes:
+
+    Blue-Green: Run old and new versions → switch all traffic to new version.
+
+    Canary: Run old and new versions → send small percentage of traffic to new version → monitor → gradually increase traffic.
+
+44.ResourceQuota & LimitRange 
+
+    ResourceQuota → Limits total resources of a namespace.
+    Example: Namespace can use max 4 CPU + 8Gi memory.
+    Can also limit number of Pods, Services, etc.
+    LimitRange → Sets resource limits for individual containers/Pods.
+    Example: One container can use max 2 CPU + 2Gi memory.
+    Can define minimum, maximum, and default CPU/memory.
+    🧠 Remember
+    Request → Kubernetes reserves this much for the Pod (100m cpu)
+    Limit   → Kubernetes won't let it use more than this (500m cpu)
+
+    ResourceQuota = Namespace total limit
+    LimitRange = Individual container limit
+
+45.Networking
+
+    Kubernetes Networking enables communication between Pods, Services, and external users.
+
+    CNI → Provides Pod networking.
+    Service → Provides stable IP/DNS access to Pods.
+    Ingress → Routes external HTTP/HTTPS traffic to Services.
+    NetworkPolicy → Controls allowed network traffic between Pods.
+
+    Flow:
+
+    CNI → Pod networking
+    Service → Stable Pod access
+    Ingress → External HTTP/HTTPS access
+    NetworkPolicy → Traffic control
+    CLI Plugins
+
+    CLI plugins extend kubectl with additional commands and functionality.
+
+    kubectl → Kubernetes CLI.
+    Plugin → Adds extra functionality.
+    Krew → Plugin manager used to discover, install, and manage kubectl plugins.
+
+    Remember:
+
+    Networking = How Kubernetes components communicate.
+    CLI plugins = How we extend kubectl.
+
+46.Headless Service 
+
+    A Headless Service has no ClusterIP (clusterIP: None) and provides DNS-based discovery of individual Pod IPs.
+
+    No virtual Service IP
+    DNS returns individual Pod IPs
+    Useful for StatefulSets
+    Provides stable DNS names for individual Pods
+
+    Remember:
+
+    Headless Service = Pod discovery, not load balancing.
+
+47.Ephemeral Container
+
+    A temporary container added to an existing Pod for troubleshooting.
+
+    kubectl debug
+
+    Command used to debug running Pods or nodes.
+
+    kubectl debug -it <pod> --image=<debug-image> --target=<container>
+    Main purpose
+    Application image
+        ↓
+    Missing debugging tools
+        ↓
+    kubectl debug
+        ↓
+    Temporary debug container
+        ↓
+    Troubleshoot without rebuilding app image
+    Remember
+
+    Ephemeral container = temporary debugging container inside an existing Pod.
+
+    kubectl debug = convenient command to create/use debugging environments.
+
+48.Topology Spread Constraints:
+    A Kubernetes scheduling feature used to distribute Pods evenly across nodes, zones, or other topology domains for high availability and fault tolerance.
+
+    Field	Meaning
+    topologyKey	Where to spread: node, zone, etc.
+    maxSkew	Maximum allowed difference in Pod counts
+    whenUnsatisfiable	What to do if spreading isn't possible
+    labelSelector	Which Pods should be considered
+
+    Topology Spread
+        ↓
+    Don't concentrate Pods
+        ↓
+    Spread them across nodes/zones
+        ↓
+    Better 
+    
+49.Priority
+
+    Defines the importance of a Pod for scheduling.
+
+    priorityClassName: high-priority
+
+    Higher value → higher priority.
+
+    Preemption
+
+    When a high-priority Pod cannot be scheduled because of insufficient resources, Kubernetes can evict lower-priority Pods to make room.
+
+    Priority
+    ↓
+    Pod importance
+
+    Preemption
+    ↓
+    Evict lower priority Pod
+    ↓
+    Make room for higher priority Pod
+    Easy memory
+
+    Priority decides WHO is important.
+
+    Preemption makes space for the important Pod
+
+50.Cert-manager
+
+    Kubernetes tool that automates obtaining, storing, and renewing TLS certificates.
+
+    TLS
+
+    Provides:
+
+    🔒 Encryption
+    Authentication of the server
+    Secure HTTPS communication
+
+    Easy memory:
+
+    Ingress handles HTTPS traffic.
+
+    Secret stores the certificate and private key.
+
+    cert-manager obtains and renews the certificate.
+
+    Issuer/ClusterIssuer tells cert-manager which CA to use.
+
+
